@@ -53,7 +53,6 @@ namespace PKHeX.WinForms.Controls
             Label_Language = new System.Windows.Forms.Label();
             FLP_AbilityRight = new System.Windows.Forms.FlowLayoutPanel();
             CB_Ability = new System.Windows.Forms.ComboBox();
-            DEV_Ability = new System.Windows.Forms.ComboBox();
             TB_AbilityNumber = new System.Windows.Forms.MaskedTextBox();
             FLP_Purification = new System.Windows.Forms.FlowLayoutPanel();
             NUD_Purification = new System.Windows.Forms.NumericUpDown();
@@ -648,7 +647,6 @@ namespace PKHeX.WinForms.Controls
             FLP_AbilityRight.AutoSize = true;
             FLP_AbilityRight.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             FLP_AbilityRight.Controls.Add(CB_Ability);
-            FLP_AbilityRight.Controls.Add(DEV_Ability);
             FLP_AbilityRight.Controls.Add(TB_AbilityNumber);
             FLP_AbilityRight.Dock = System.Windows.Forms.DockStyle.Fill;
             FLP_AbilityRight.Location = new System.Drawing.Point(120, 255);
@@ -670,27 +668,13 @@ namespace PKHeX.WinForms.Controls
             CB_Ability.TabIndex = 0;
             CB_Ability.SelectedIndexChanged += ValidateComboBox2;
             CB_Ability.Validating += ValidateComboBox;
-            // 
-            // DEV_Ability
-            // 
-            DEV_Ability.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            DEV_Ability.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
-            DEV_Ability.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
-            DEV_Ability.Enabled = false;
-            DEV_Ability.FormattingEnabled = true;
-            DEV_Ability.Location = new System.Drawing.Point(0, 26);
-            DEV_Ability.Margin = new System.Windows.Forms.Padding(0, 0, 0, 1);
-            DEV_Ability.Name = "DEV_Ability";
-            DEV_Ability.Size = new System.Drawing.Size(126, 25);
-            DEV_Ability.TabIndex = 1;
-            DEV_Ability.Visible = false;
-            DEV_Ability.Click += ClickManualAbility;
+            CB_Ability.Click += ClickManualAbility;
             // 
             // TB_AbilityNumber
             // 
             TB_AbilityNumber.Anchor = System.Windows.Forms.AnchorStyles.Left;
             TB_AbilityNumber.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            TB_AbilityNumber.Location = new System.Drawing.Point(126, 26);
+            TB_AbilityNumber.Location = new System.Drawing.Point(144, 0);
             TB_AbilityNumber.Margin = new System.Windows.Forms.Padding(0);
             TB_AbilityNumber.Mask = "0";
             TB_AbilityNumber.Name = "TB_AbilityNumber";
@@ -3362,7 +3346,6 @@ namespace PKHeX.WinForms.Controls
         private System.Windows.Forms.Label Label_Ability;
         private System.Windows.Forms.FlowLayoutPanel FLP_AbilityRight;
         private System.Windows.Forms.ComboBox CB_Ability;
-        private System.Windows.Forms.ComboBox DEV_Ability;
         private System.Windows.Forms.MaskedTextBox TB_AbilityNumber;
         private System.Windows.Forms.Label Label_Language;
         private System.Windows.Forms.ComboBox CB_Language;

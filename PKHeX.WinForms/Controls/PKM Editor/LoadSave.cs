@@ -303,19 +303,16 @@ public partial class PKMEditor
         else
             pk.MetDate = DateOnly.FromDateTime(CAL_MetDate.Value);
 
-        pk.Ability = WinFormsUtil.GetIndex(DEV_Ability);
+        if (CB_Ability.SelectedItem is ComboItem ability)
+            pk.Ability = ability.Value;
     }
 
     private void LoadMisc6(PKM pk)
     {
         TB_EC.Text = pk.EncryptionConstant.ToString("X8");
-        DEV_Ability.SelectedValue = pk.Ability;
+        LoadAbilitySelection(pk.Ability);
 
-        // with some simple error handling
-        var bitNumber = pk.AbilityNumber;
-        int abilityIndex = AbilityVerifier.IsValidAbilityBits(bitNumber) ? bitNumber >> 1 : 0;
-        LoadClamp(CB_Ability, abilityIndex);
-        TB_AbilityNumber.Text = bitNumber.ToString();
+        TB_AbilityNumber.Text = pk.AbilityNumber.ToString();
 
         LoadRelearnMoves(pk);
         LoadHandlingTrainer(pk);
@@ -393,32 +390,6 @@ public partial class PKMEditor
         pk.HandlingTrainerName = TB_HT.Text;
         pk.HandlingTrainerGender = UC_HTGender.Gender;
         pk.HandlingTrainerFriendship = (byte)Util.ToInt32(TB_FriendshipHT.Text);
-    }
-
-    private void LoadAbility4(PKM pk)
-    {
-        var index = GetAbilityIndex4(pk);
-        LoadClamp(CB_Ability, index);
-    }
-
-    private static int GetAbilityIndex4(PKM pk)
-    {
-        var pi = pk.PersonalInfo;
-        var ability = pk.Ability;
-        int abilityIndex = pi.GetIndexOfAbility(ability);
-        if (abilityIndex >= 2)
-            return 2;
-        if (abilityIndex < 0)
-        {
-            if (ability == (int)Ability.Reckless && pk is { Context: EntityContext.Gen5, Species: (ushort)Species.Basculin, Form: 1 })
-                return 3; // manually appended "extra" bug case for Gen5 Basculin-Blue.
-            return 0; // fall back to first ability.
-        }
-
-        var abils = (IPersonalAbility12)pi;
-        if (abils.IsAbility12Same)
-            return pk.PIDAbility;
-        return abilityIndex;
     }
 
     private void LoadMisc8(PK8 pk8)

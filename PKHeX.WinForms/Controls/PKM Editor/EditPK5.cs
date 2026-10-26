@@ -19,11 +19,7 @@ public partial class PKMEditor
         CHK_NSparkle.Checked = pk5.NSparkle;
         NUD_PokeStarFame.Value = pk5.PokeStarFame;
 
-        DEV_Ability.SelectedValue = pk5.Ability;
-        if (!HaX && pk5.HiddenAbility)
-            CB_Ability.SelectedIndex = 2;
-        else if (!HaX)
-            LoadAbility4(pk5);
+        LoadAbilitySelection(pk5.Ability);
 
         LoadPartyStats(pk5);
         UpdateStats();
@@ -42,15 +38,6 @@ public partial class PKMEditor
         pk5.GroundTile = (GroundTileType)WinFormsUtil.GetIndex(CB_GroundTile);
         pk5.NSparkle = CHK_NSparkle.Checked;
         pk5.PokeStarFame = (byte)NUD_PokeStarFame.Value;
-        if (!HaX)
-        {
-            pk5.HiddenAbility = CB_Ability.SelectedIndex is 2;
-        }
-        else
-        {
-            var pi = pk5.PersonalInfo;
-            pk5.HiddenAbility = pi.HasHiddenAbility && pk5.Ability == pi.AbilityH;
-        }
 
         SavePartyStats(pk5);
         pk5.FixMoves();

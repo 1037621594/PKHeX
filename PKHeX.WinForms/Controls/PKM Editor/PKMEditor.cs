@@ -76,7 +76,7 @@ public sealed partial class PKMEditor : UserControl, IMainEditor
 
     private void ClickManualAbility(object sender, EventArgs e)
     {
-        if (ModifierKeys != Keys.Control)
+        if (ModifierKeys != Keys.Control || Entity.Format < 6)
             return;
         var value = Util.ToInt32(TB_AbilityNumber.Text);
         if (value is not (1 or 2 or 4))
@@ -94,7 +94,7 @@ public sealed partial class PKMEditor : UserControl, IMainEditor
         {
             pi = Entity.PersonalInfo;
         }
-        DEV_Ability.SelectedValue = pi.GetAbilityAtIndex(value >> 1);
+        LoadAbilitySelection(pi.GetAbilityAtIndex(value >> 1));
     }
 
     private sealed class ValidationRequiredSet(Control[] controls, Func<PKM, bool> shouldCheck, Func<Control, bool> isState)
@@ -112,8 +112,8 @@ public sealed partial class PKMEditor : UserControl, IMainEditor
         ComboBox[] cbs =
         [
             CB_Nature, CB_StatAlignment,
-            CB_Country, CB_SubRegion, CB_3DSReg, CB_Language, CB_Ball, CB_HeldItem, DEV_Ability, CB_Species,
-            CB_GroundTile, CB_GameOrigin, CB_BattleVersion, CB_Ability, CB_MetLocation, CB_EggLocation, CB_Language, CB_HTLanguage,
+            CB_Country, CB_SubRegion, CB_3DSReg, CB_Language, CB_Ball, CB_HeldItem, CB_Ability, CB_Species,
+            CB_GroundTile, CB_GameOrigin, CB_BattleVersion, CB_MetLocation, CB_EggLocation, CB_Language, CB_HTLanguage,
             CB_AlphaMastered,
         ];
         foreach (var cb in cbs.Concat(Relearn))
@@ -497,15 +497,9 @@ public sealed partial class PKMEditor : UserControl, IMainEditor
 
     private void SetAbilityList()
     {
-        if (Entity.Format < 3) // no abilities
+        // Gen3 stores a species-specific ability bit. Later formats use the save-wide ID list.
+        if (Entity.Format != 3)
             return;
-        if (Entity.Format >= 4)
-        {
-            // Modern formats store the ability ID directly. Allow any ability in the save generation.
-            DEV_Ability.DataSource = GameInfo.FilteredSources.Abilities;
-            DEV_Ability.SelectedValue = Entity.Ability;
-            return;
-        }
 
         if (FieldsLoaded) // Gen3 has form-specific ability pairs
             Entity.Form = (byte)CB_Form.SelectedIndex; // update pk field for form specific abilities
@@ -518,6 +512,48 @@ public sealed partial class PKMEditor : UserControl, IMainEditor
         CB_Ability.DataSource = items;
         CB_Ability.SelectedIndex = Math.Clamp(ability, 0, items.Count - 1); // restore original index if available
         FieldsLoaded = tmp;
+    }
+
+    private void LoadAbilitySelection(int ability)
+    {
+        // Selection by item also works during binding initialization, before ValueMember is assigned.
+        int selected = -1;
+        for (int i = 0; i < CB_Ability.Items.Count; i++)
+        {
+            if (CB_Ability.Items[i] is not ComboItem item || item.Value != ability)
+                continue;
+            selected = i;
+            break;
+        }
+        CB_Ability.SelectedIndex = selected;
+    }
+
+    private void UpdateAbilitySelection()
+    {
+        if (CB_Ability.SelectedItem is not ComboItem item)
+            return;
+
+        var ability = item.Value;
+        int index = Entity.PersonalInfo.GetIndexOfAbility(ability);
+        if (Entity.Format >= 6)
+        {
+            // An arbitrary ability has no species slot. Preserve the existing slot in that case.
+            int currentNumber = Util.ToInt32(TB_AbilityNumber.Text);
+            bool sameSlot = AbilityVerifier.IsValidAbilityBits(currentNumber)
+                && Entity.PersonalInfo.GetAbilityAtIndex(currentNumber >> 1) == ability;
+            if (index >= 0 && !sameSlot)
+                TB_AbilityNumber.Text = (1 << index).ToString();
+            Entity.AbilityNumber = Util.ToInt32(TB_AbilityNumber.Text);
+        }
+        else if (Entity is PK5 pk5 && index >= 0)
+        {
+            if (!pk5.HiddenAbility || pk5.PersonalInfo.AbilityH != ability)
+                pk5.HiddenAbility = index == 2;
+        }
+
+        // Store the ID directly; RefreshAbility/SetAbilityIndex would replace it with a species ability.
+        Entity.Ability = ability;
+        UpdateLegality();
     }
 
     private void UpdateIsShiny()
@@ -1015,7 +1051,7 @@ public sealed partial class PKMEditor : UserControl, IMainEditor
             Entity.SetPIDNature((Nature)WinFormsUtil.GetIndex(CB_Nature));
         else if (sender == BTN_RerollPID)
             Entity.SetPIDGender(Entity.Gender);
-        else if (sender == CB_Ability && CB_Ability.SelectedIndex != Entity.PIDAbility && Entity.PIDAbility > -1)
+        else if (sender == CB_Ability && Entity.Format == 3 && CB_Ability.SelectedIndex != Entity.PIDAbility && Entity.PIDAbility > -1)
             Entity.SetAbilityIndex(CB_Ability.SelectedIndex);
 
         TB_PID.Text = Entity.PID.ToString("X8");
@@ -1784,9 +1820,12 @@ public sealed partial class PKMEditor : UserControl, IMainEditor
         ValidateComboBox(sender, new CancelEventArgs());
         if (sender == CB_Ability)
         {
-            if (Entity.Format >= 6)
-                TB_AbilityNumber.Text = (1 << CB_Ability.SelectedIndex).ToString();
-            else if (Entity.Format <= 5 && CB_Ability.SelectedIndex < 2) // Format <= 5, not hidden
+            if (Entity.Format >= 4)
+            {
+                UpdateAbilitySelection();
+                return;
+            }
+            if (Entity.Format == 3 && CB_Ability.SelectedIndex < 2)
                 UpdateRandomPID(sender, e);
             UpdateLegality();
         }
@@ -2077,7 +2116,6 @@ public sealed partial class PKMEditor : UserControl, IMainEditor
         StatusView.Visible = Main.Settings.EntityEditor.ShowStatusCondition;
         ExperienceBar.Visible = Main.Settings.EntityEditor.ShowExperienceBar;
 
-        DEV_Ability.Enabled = DEV_Ability.Visible = DEV_Ability.TabStop = format > 3 || t is PA9;
         ToggleInterface(Entity.Format);
     }
 
@@ -2105,7 +2143,7 @@ public sealed partial class PKMEditor : UserControl, IMainEditor
         if (!orderCorrect) // Swap the locations of the marks.
             (PB_Mark2.Location, PB_Mark3.Location) = (PB_Mark3.Location, PB_Mark2.Location);
 
-        CB_Ability.Visible = CB_Ability.TabStop = !DEV_Ability.Enabled && format >= 3;
+        CB_Ability.Enabled = CB_Ability.Visible = CB_Ability.TabStop = format >= 3;
         Label_Nature.Visible = CB_Nature.Visible = format >= 3;
         L_StatAlignment.Visible = CB_StatAlignment.Visible = format >= 8;
         Label_Ability.Visible = FLP_AbilityRight.Visible = format >= 3;
@@ -2124,8 +2162,7 @@ public sealed partial class PKMEditor : UserControl, IMainEditor
         UC_Gender.Visible = format >= 2 || (format == 1 && Main.Settings.EntityEditor.ShowGenderGen1);
         L_CatchRate.Visible = CR_PK1.Visible = format == 1;
 
-        // HaX override, needs to be after DEV_Ability enabled assignment.
-        TB_AbilityNumber.Visible = format >= 6 && DEV_Ability.Enabled;
+        TB_AbilityNumber.Visible = format >= 6;
 
         // Met Tab
         FLP_MetDate.Visible = format >= 4;
@@ -2338,7 +2375,19 @@ public sealed partial class PKMEditor : UserControl, IMainEditor
         }
 
         if (sav.Generation >= 4)
-            SetIfDifferentCount(source.Abilities, DEV_Ability, force);
+        {
+            bool loaded = FieldsLoaded;
+            FieldsLoaded = false;
+            try
+            {
+                SetIfDifferentCount(source.Abilities, CB_Ability, force);
+                LoadAbilitySelection(Entity.Ability);
+            }
+            finally
+            {
+                FieldsLoaded = loaded;
+            }
+        }
 
         if (sav.Generation >= 8)
         {
