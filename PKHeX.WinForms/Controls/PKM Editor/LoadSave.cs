@@ -303,7 +303,7 @@ public partial class PKMEditor
         else
             pk.MetDate = DateOnly.FromDateTime(CAL_MetDate.Value);
 
-        pk.Ability = WinFormsUtil.GetIndex(HaX || pk is PA9 ? DEV_Ability : CB_Ability);
+        pk.Ability = WinFormsUtil.GetIndex(DEV_Ability);
     }
 
     private void LoadMisc6(PKM pk)

@@ -18,10 +18,7 @@ public partial class PKMEditor
         CB_GroundTile.SelectedValue = pk4.Gen4 ? (int)pk4.GroundTile : 0;
         CB_GroundTile.Visible = Label_GroundTile.Visible = Entity.Gen4;
 
-        if (HaX)
-            DEV_Ability.SelectedValue = pk4.Ability;
-        else
-            LoadAbility4(pk4);
+        DEV_Ability.SelectedValue = pk4.Ability;
 
         // Minor properties
         ShinyLeaf.SetValue(pk4.ShinyLeaf);

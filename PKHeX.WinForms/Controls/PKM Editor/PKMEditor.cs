@@ -2072,7 +2072,7 @@ public sealed partial class PKMEditor : UserControl, IMainEditor
         StatusView.Visible = Main.Settings.EntityEditor.ShowStatusCondition;
         ExperienceBar.Visible = Main.Settings.EntityEditor.ShowExperienceBar;
 
-        DEV_Ability.Enabled = DEV_Ability.Visible = DEV_Ability.TabStop = (format > 3 && HaX) || t is PA9;
+        DEV_Ability.Enabled = DEV_Ability.Visible = DEV_Ability.TabStop = format > 3 || t is PA9;
         ToggleInterface(Entity.Format);
     }
 

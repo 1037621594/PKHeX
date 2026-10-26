@@ -19,11 +19,10 @@ public partial class PKMEditor
         CHK_NSparkle.Checked = pk5.NSparkle;
         NUD_PokeStarFame.Value = pk5.PokeStarFame;
 
-        if (HaX)
-            DEV_Ability.SelectedValue = pk5.Ability;
-        else if (pk5.HiddenAbility)
+        DEV_Ability.SelectedValue = pk5.Ability;
+        if (!HaX && pk5.HiddenAbility)
             CB_Ability.SelectedIndex = 2;
-        else
+        else if (!HaX)
             LoadAbility4(pk5);
 
         LoadPartyStats(pk5);
