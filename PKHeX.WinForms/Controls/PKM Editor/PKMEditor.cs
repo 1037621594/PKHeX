@@ -499,10 +499,15 @@ public sealed partial class PKMEditor : UserControl, IMainEditor
     {
         if (Entity.Format < 3) // no abilities
             return;
-        if (Entity.Format >= 4) // DEV_Ability uses the save-filtered ability list
+        if (Entity.Format >= 4)
+        {
+            // Modern formats store the ability ID directly. Allow any ability in the save generation.
+            DEV_Ability.DataSource = GameInfo.FilteredSources.Abilities;
+            DEV_Ability.SelectedValue = Entity.Ability;
             return;
+        }
 
-        if (FieldsLoaded) // has forms
+        if (FieldsLoaded) // Gen3 has form-specific ability pairs
             Entity.Form = (byte)CB_Form.SelectedIndex; // update pk field for form specific abilities
 
         int ability = CB_Ability.SelectedIndex;
