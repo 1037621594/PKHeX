@@ -28,7 +28,7 @@ jobs:
           dotnet-version: 10.0.x
 
       - name: Publish Windows application
-        run: dotnet publish PKHeX.WinForms/PKHeX.WinForms.csproj --configuration Release --output artifacts/PKHeX -p:DebugType=None -p:DebugSymbols=false
+        run: dotnet publish PKHeX.WinForms/PKHeX.WinForms.csproj --configuration Release --output artifacts/PKHeX -p:DebugType=None -p:DebugSymbols=false -p:EmbedAllSources=false
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
