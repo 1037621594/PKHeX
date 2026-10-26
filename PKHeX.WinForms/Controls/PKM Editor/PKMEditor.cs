@@ -499,26 +499,19 @@ public sealed partial class PKMEditor : UserControl, IMainEditor
     {
         if (Entity.Format < 3) // no abilities
             return;
+        if (Entity.Format >= 4) // DEV_Ability uses the save-filtered ability list
+            return;
 
-        if (Entity.Format > 3 && FieldsLoaded) // has forms
+        if (FieldsLoaded) // has forms
             Entity.Form = (byte)CB_Form.SelectedIndex; // update pk field for form specific abilities
 
         int ability = CB_Ability.SelectedIndex;
 
         bool tmp = FieldsLoaded;
         FieldsLoaded = false;
-        var items = Entity.Format >= 4
-            ? GameInfo.FilteredSources.Abilities
-            : GameInfo.FilteredSources.GetAbilityList(Entity.PersonalInfo);
+        var items = GameInfo.FilteredSources.GetAbilityList(Entity.PersonalInfo);
         CB_Ability.DataSource = items;
-        if (Entity.Format >= 4)
-        {
-            var selected = items.Select((item, index) => (item, index))
-                .FirstOrDefault(z => z.item.Value == Entity.Ability).index;
-            CB_Ability.SelectedIndex = selected;
-        }
-        else
-            CB_Ability.SelectedIndex = Math.Clamp(ability, 0, items.Count - 1); // restore original index if available
+        CB_Ability.SelectedIndex = Math.Clamp(ability, 0, items.Count - 1); // restore original index if available
         FieldsLoaded = tmp;
     }
 
