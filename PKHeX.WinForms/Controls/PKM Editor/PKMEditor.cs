@@ -512,7 +512,11 @@ public sealed partial class PKMEditor : UserControl, IMainEditor
             : GameInfo.FilteredSources.GetAbilityList(Entity.PersonalInfo);
         CB_Ability.DataSource = items;
         if (Entity.Format >= 4)
-            CB_Ability.SelectedValue = Entity.Ability;
+        {
+            var selected = items.Select((item, index) => (item, index))
+                .FirstOrDefault(z => z.item.Value == Entity.Ability).index;
+            CB_Ability.SelectedIndex = selected;
+        }
         else
             CB_Ability.SelectedIndex = Math.Clamp(ability, 0, items.Count - 1); // restore original index if available
         FieldsLoaded = tmp;
