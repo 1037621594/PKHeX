@@ -112,7 +112,7 @@ public sealed partial class PKMEditor : UserControl, IMainEditor
         ComboBox[] cbs =
         [
             CB_Nature, CB_StatAlignment,
-            CB_Country, CB_SubRegion, CB_3DSReg, CB_Language, CB_Ball, CB_HeldItem, CB_Species, DEV_Ability,
+            CB_Country, CB_SubRegion, CB_3DSReg, CB_Language, CB_Ball, CB_HeldItem, DEV_Ability, CB_Species,
             CB_GroundTile, CB_GameOrigin, CB_BattleVersion, CB_Ability, CB_MetLocation, CB_EggLocation, CB_Language, CB_HTLanguage,
             CB_AlphaMastered,
         ];
